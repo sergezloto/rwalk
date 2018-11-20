@@ -1,0 +1,8 @@
+[package]
+name = "md5walk"
+version = "0.1.0"
+authors = ["szloto <sergezloto@icloud.com>"]
+
+[dependencies]
+rust-crypto = "*"
+walkdir = "*"
