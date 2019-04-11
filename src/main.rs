@@ -1,6 +1,3 @@
-fn main() {
-    visit();
-}
 extern crate walkdir;
 use walkdir::{WalkDir, DirEntry};
 
@@ -9,30 +6,39 @@ use crypto::digest::Digest;
 use crypto::md5::Md5;
 
 ///////////
-use std::io;
+//use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 
+use std::env;
+
 extern crate rayon;
-use rayon::prelude::*;
+//use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
 
 // extern crate memmap;
 // use memmap::Mmap;
 
-fn visit() {
+fn main() {
+    for dir in env::args() {
+        visit(&dir)
+    }
+}
+
+fn visit(dir: &str) {
     let mut buffer = Vec::new();
     let mut md5 = Md5::new();
 
-    let pool = ThreadPoolBuilder::new().num_threads(4).build().unwrap();
+    let nthreads = 0;  // let rayon set thread number
+    let pool = ThreadPoolBuilder::new().num_threads(nthreads).build().unwrap();
 
-    for entry in WalkDir::new(".")
+    for entry in WalkDir::new(dir)
         .follow_links(false)
         .same_file_system(true)
         .contents_first(true)
-    //.into_iter()
-    //.filter_entry(|e| !is_hidden(e))
+        .into_iter()
+        .filter_entry(|e| !is_hidden(e))
     {
 
         let entry = entry.unwrap();
@@ -48,20 +54,25 @@ fn visit() {
                 return
             }
             // Open file
-            let f = File::open(path).unwrap();
+            match File::open(path) {
+                Ok(f) => {
+                    //let mmap = unsafe { Mmap::map(&f)? };
 
-            //let mmap = unsafe { Mmap::map(&f)? };
+                    let mut reader = BufReader::new(f);
+                    if let Ok(_) = reader.read_to_end(&mut buffer) {
 
-            let mut reader = BufReader::new(f);
-            reader.read_to_end(&mut buffer).unwrap();
+                        // Compute content MD5
+                        md5.reset();
+                        md5.input(&buffer);
+                        let h = md5.result_str();
 
-            // Compute content MD5
-            md5.reset();
-            md5.input(&buffer);
-            let h = md5.result_str();
-
-            // Write out md5< >< >filename
-            println!("{}  {}", h, path.display());
+                        // Write out md5< >< >filename
+                        println!("{}  {}", h, path.display())
+                    }
+                },
+                Err(e) =>
+                eprintln!("Could not open {}: {}", path.display(), e)
+            }
         }
         );
     }
