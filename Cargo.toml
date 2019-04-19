@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["szloto <sergezloto@icloud.com>"]
 
 [dependencies]
-rayon = "*"
-rust-crypto = "*"
 walkdir = "*"
+imagefmt = "*"
+structopt = "*"
