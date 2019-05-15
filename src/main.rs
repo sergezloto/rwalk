@@ -30,17 +30,18 @@ fn visit(dir: &String) {
         let entry = entry.unwrap();
         let path = entry.path();
 
-        tga_to_png(path).unwrap_or_else(|e| println!("FAIL {:?}, {}", path, e));
+        tgabmp_to_png(path).unwrap_or_else(|e| println!("FAIL {:?}, {}", path, e));
     }
 }
 
 
 extern crate imagefmt;
-fn tga_to_png(path: &std::path::Path) -> Result<(), Box<Error>> {
+fn tgabmp_to_png(path: &std::path::Path) -> Result<(), Box<Error>> {
     use std::fs;
 
     match path.extension().and_then(|oss| oss.to_str()) {
-        Some("tga") => {
+        Some("tga")
+        | Some("bmp") => {
              use imagefmt::{ColFmt, ColType};
 
             let img = imagefmt::read(path, ColFmt::Auto)?;
